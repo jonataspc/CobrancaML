@@ -1,0 +1,2 @@
+data_entrada_cobranca;parcela_em_cobranca;plano_total_parcs;percent_evoluc_pgto_plano;pmt_vl;pmt_dt;dias_atraso;profissao;tipo_bem;vlr_total_financiado;valor_risco;cidade;estado;idade;motivo_inad;qtd_cobranca_anterior;qtd_pgtos_anterior;dia_pgto_moda;ult_dia_pgto;percentual_honra_pgto;qtd_fones_cpc;media_pontuacao_fones;pagamento;contrato
+2019-05-13;22;36;58.333;566.63;2019-04-27 00:00:00;43;XXX;YYY;12827.22;8499.45;Curitiba;PR;31;DESCONTROLE FINANCEIRO;2;1;6;6;3.2258;1;0.142857;0;1
