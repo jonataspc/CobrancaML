@@ -65,7 +65,9 @@ namespace CobrancaMLML.ConsoleApp
             Console.WriteLine("=============== Training  model ===============");
             var mlModel = trainingPipeline.Fit(trainingDataView);
 
-            
+            //get features' importance
+            //error in the 'Model' referente below
+            var modelParameters = mlModel.LastTransformer.Model;
 
             Console.WriteLine("=============== End of training process ===============");
             
