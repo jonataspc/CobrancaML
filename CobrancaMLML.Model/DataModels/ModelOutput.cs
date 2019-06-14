@@ -16,5 +16,8 @@ namespace CobrancaMLML.Model.DataModels
         [ColumnName("PredictedLabel")]
         public Boolean Prediction { get; set; }
         public float Score { get; set; }
+        public float Probability { get; set; }
     }
+
+    
 }

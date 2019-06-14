@@ -39,7 +39,7 @@ namespace CobrancaMLML.ConsoleApp
             // Try a single prediction
             ModelOutput predictionResult = predEngine.Predict(sampleData);
 
-            Console.WriteLine($"Single Prediction --> Actual value: {sampleData.Pagamento} | Predicted value: {predictionResult.Prediction} | Predicted scores: [{predictionResult.Score}]");
+            Console.WriteLine($"Single Prediction --> Actual value: {sampleData.Pagamento} | Predicted value: {predictionResult.Prediction} | Predicted score: [{predictionResult.Score}] | Probability: {predictionResult.Probability}");
 
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
             Console.ReadKey();

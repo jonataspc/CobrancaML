@@ -11,6 +11,8 @@ namespace CobrancaMLML.Model.DataModels
 
         public float PredictionScore { get; set; }
 
+        public float PredictionProbability { get; set; }
+
         public bool Prediction { get; set; }
 
 
