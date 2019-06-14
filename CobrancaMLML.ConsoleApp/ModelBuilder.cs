@@ -37,15 +37,17 @@ namespace CobrancaMLML.ConsoleApp
                                             allowSparse: false);
 
             // Build training pipeline
-            var dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("pagamento", "pagamento")
-                                      .Append(mlContext.Transforms.Categorical.OneHotEncoding(new[] { new InputOutputColumnPair("profissao", "profissao"), new InputOutputColumnPair("tipo_bem", "tipo_bem"), new InputOutputColumnPair("estado", "estado"), new InputOutputColumnPair("motivo_inad", "motivo_inad") }))
+            // Data process configuration with pipeline data transformations 
+            var dataProcessPipeline = mlContext.Transforms.Categorical.OneHotEncoding(new[] { new InputOutputColumnPair("profissao", "profissao"), new InputOutputColumnPair("tipo_bem", "tipo_bem"), new InputOutputColumnPair("estado", "estado"), new InputOutputColumnPair("motivo_inad", "motivo_inad") })
                                       .Append(mlContext.Transforms.Categorical.OneHotHashEncoding(new[] { new InputOutputColumnPair("data_entrada_cobranca", "data_entrada_cobranca"), new InputOutputColumnPair("pmt_dt", "pmt_dt"), new InputOutputColumnPair("cidade", "cidade") }))
                                       .Append(mlContext.Transforms.Concatenate("Features", new[] { "profissao", "tipo_bem", "estado", "motivo_inad", "data_entrada_cobranca", "pmt_dt", "cidade", "parcela_em_cobranca", "plano_total_parcs", "percent_evoluc_pgto_plano", "pmt_vl", "dias_atraso", "vlr_total_financiado", "valor_risco", "idade", "qtd_cobranca_anterior", "qtd_pgtos_anterior", "dia_pgto_moda", "ult_dia_pgto", "percentual_honra_pgto", "qtd_fones_cpc", "media_pontuacao_fones" }));
 
             // Set the training algorithm 
-            var trainer = mlContext.MulticlassClassification.Trainers.LightGbm(new LightGbmMulticlassTrainer.Options() { NumberOfIterations = 150, LearningRate = 0.127348f, NumberOfLeaves = 83, MinimumExampleCountPerLeaf = 1, UseCategoricalSplit = false, HandleMissingValue = true, MinimumExampleCountPerGroup = 10, MaximumCategoricalSplitPointCount = 16, CategoricalSmoothing = 10, L2CategoricalRegularization = 0.1, UseSoftmax = false, Booster = new GradientBooster.Options() { L2Regularization = 0, L1Regularization = 0.5 }, LabelColumnName = "pagamento", FeatureColumnName = "Features" })
-                                      .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"));
+            var trainer = mlContext.BinaryClassification.Trainers.LightGbm(new LightGbmBinaryTrainer.Options() { NumberOfIterations = 200, LearningRate = 0.13136f, NumberOfLeaves = 100, MinimumExampleCountPerLeaf = 10, UseCategoricalSplit = false, HandleMissingValue = true, MinimumExampleCountPerGroup = 10, MaximumCategoricalSplitPointCount = 8, CategoricalSmoothing = 20, L2CategoricalRegularization = 0.5, Booster = new GradientBooster.Options() { L2Regularization = 0, L1Regularization = 0.5 }, LabelColumnName = "pagamento", FeatureColumnName = "Features" });
             var trainingPipeline = dataProcessPipeline.Append(trainer);
+
+
+
 
 
 
@@ -54,29 +56,30 @@ namespace CobrancaMLML.ConsoleApp
             // Cross-Validate with single dataset (since we don't have two datasets, one for training and for evaluate)
             // in order to evaluate and get the model's accuracy metrics
             Console.WriteLine("=============== Cross-validating to get model's accuracy metrics ===============");
-            var crossValidationResults = mlContext.MulticlassClassification.CrossValidate(trainingDataView, trainingPipeline, numberOfFolds: 5, labelColumnName: "pagamento");
-            PrintMulticlassClassificationFoldsAverageMetrics(crossValidationResults);
-
+            var crossValidationResults = mlContext.BinaryClassification.CrossValidateNonCalibrated(trainingDataView, trainingPipeline, numberOfFolds: 5, labelColumnName: "pagamento");
+            PrintBinaryClassificationFoldsAverageMetrics(crossValidationResults);
 
 
 
 
             // Train Model
+            Console.WriteLine("=============== End of training process ===============");
+
             Console.WriteLine("=============== Training  model ===============");
+
             var mlModel = trainingPipeline.Fit(trainingDataView);
 
-            //get features' importance
-            //error in the 'Model' referente below
-            var modelParameters = mlModel.LastTransformer.Model;
-
             Console.WriteLine("=============== End of training process ===============");
-            
+
+
+
 
 
             // Save/persist the trained model to a .ZIP file
             Console.WriteLine($"=============== Saving the model  ===============");
             mlContext.Model.Save(mlModel, trainingDataView.Schema, GetAbsolutePath(MODEL_FILEPATH));
             Console.WriteLine("The model is saved to {0}", GetAbsolutePath(MODEL_FILEPATH));
+
         }
 
 
@@ -104,6 +107,38 @@ namespace CobrancaMLML.ConsoleApp
             }
             Console.WriteLine($"************************************************************");
         }
+
+        public static void PrintBinaryClassificationMetrics(BinaryClassificationMetrics metrics)
+        {
+            Console.WriteLine($"************************************************************");
+            Console.WriteLine($"*       Metrics for binary classification model      ");
+            Console.WriteLine($"*-----------------------------------------------------------");
+            Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}");
+            Console.WriteLine($"*       Auc:      {metrics.AreaUnderRocCurve:P2}");
+            Console.WriteLine($"************************************************************");
+        }
+
+
+       
+
+        public static void PrintBinaryClassificationFoldsAverageMetrics(IEnumerable<TrainCatalogBase.CrossValidationResult<BinaryClassificationMetrics>> crossValResults)
+        {
+            var metricsInMultipleFolds = crossValResults.Select(r => r.Metrics);
+
+            var AccuracyValues = metricsInMultipleFolds.Select(m => m.Accuracy);
+            var AccuracyAverage = AccuracyValues.Average();
+            var AccuraciesStdDeviation = CalculateStandardDeviation(AccuracyValues);
+            var AccuraciesConfidenceInterval95 = CalculateConfidenceInterval95(AccuracyValues);
+
+
+            Console.WriteLine($"*************************************************************************************************************");
+            Console.WriteLine($"*       Metrics for Binary Classification model      ");
+            Console.WriteLine($"*------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine($"*       Average Accuracy:    {AccuracyAverage:0.###}  - Standard deviation: ({AccuraciesStdDeviation:#.###})  - Confidence Interval 95%: ({AccuraciesConfidenceInterval95:#.###})");
+            Console.WriteLine($"*************************************************************************************************************");
+        }
+
+       
 
         public static void PrintMulticlassClassificationFoldsAverageMetrics(IEnumerable<TrainCatalogBase.CrossValidationResult<MulticlassClassificationMetrics>> crossValResults)
         {

@@ -15,6 +15,6 @@ namespace CobrancaMLML.Model.DataModels
         // its default value, which is the name of the field.
         [ColumnName("PredictedLabel")]
         public Boolean Prediction { get; set; }
-        public float[] Score { get; set; }
+        public float Score { get; set; }
     }
 }

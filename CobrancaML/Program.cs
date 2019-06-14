@@ -50,10 +50,10 @@ namespace CobrancaML
                 //predict the result
                 ModelOutput result = predEngine.Predict(item);
 
-                Console.WriteLine($"Debt Id: {item.Identifier} | Prediction: {result.Prediction} | Score: {result.Score[0].ToString("0.0000000000")} ");
+                Console.WriteLine($"Debt Id: {item.Identifier} | Prediction: {result.Prediction} | Score: {result.Score.ToString("0.0000000000")} ");
 
                 //set the score in the object 
-                item.PredictionScore = result.Score[0];
+                item.PredictionScore = result.Score;
                 item.Prediction = result.Prediction;
             }
 
