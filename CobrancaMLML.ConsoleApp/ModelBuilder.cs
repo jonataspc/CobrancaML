@@ -14,6 +14,7 @@ using CobrancaMLML.Model.DataModels;
 using Microsoft.ML.Trainers.LightGbm;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Calibrators;
+using System.Numerics;
 
 namespace CobrancaMLML.ConsoleApp
 {
@@ -47,6 +48,8 @@ namespace CobrancaMLML.ConsoleApp
             var trainingPipeline = dataProcessPipeline.Append(trainer);
 
 
+           
+
 
 
 
@@ -63,11 +66,16 @@ namespace CobrancaMLML.ConsoleApp
 
 
             // Train Model
-            Console.WriteLine("=============== End of training process ===============");
-
             Console.WriteLine("=============== Training  model ===============");
 
             var mlModel = trainingPipeline.Fit(trainingDataView);
+
+            //get features' Weights
+            //var modelParameters = mlModel.LastTransformer.Model;
+            //VBuffer<float> weights = default;
+
+            //modelParameters.SubModel.GetFeatureWeights(ref weights);
+
 
             Console.WriteLine("=============== End of training process ===============");
 
