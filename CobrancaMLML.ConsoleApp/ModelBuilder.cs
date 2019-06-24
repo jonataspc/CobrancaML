@@ -41,7 +41,7 @@ namespace CobrancaMLML.ConsoleApp
             // Data process configuration with pipeline data transformations 
             var dataProcessPipeline = mlContext.Transforms.Categorical.OneHotEncoding(new[] { new InputOutputColumnPair("profissao", "profissao"), new InputOutputColumnPair("tipo_bem", "tipo_bem"), new InputOutputColumnPair("estado", "estado"), new InputOutputColumnPair("motivo_inad", "motivo_inad") })
                                       .Append(mlContext.Transforms.Categorical.OneHotHashEncoding(new[] { new InputOutputColumnPair("data_entrada_cobranca", "data_entrada_cobranca"), new InputOutputColumnPair("pmt_dt", "pmt_dt"), new InputOutputColumnPair("cidade", "cidade") }))
-                                      .Append(mlContext.Transforms.Concatenate("Features", new[] { "profissao", "tipo_bem", "estado", "motivo_inad", "data_entrada_cobranca", "pmt_dt", "cidade", "parcela_em_cobranca", "plano_total_parcs", "percent_evoluc_pgto_plano", "pmt_vl", "dias_atraso", "vlr_total_financiado", "valor_risco", "idade", "qtd_cobranca_anterior", "qtd_pgtos_anterior", "dia_pgto_moda", "ult_dia_pgto", "percentual_honra_pgto", "qtd_fones_cpc", "media_pontuacao_fones" }));
+                                      .Append(mlContext.Transforms.Concatenate("Features", new[] {"parcela_em_cobranca", "plano_total_parcs", "percent_evoluc_pgto_plano", "pmt_vl", "dias_atraso", "vlr_total_financiado", "valor_risco", "idade", "qtd_cobranca_anterior", "qtd_pgtos_anterior", "dia_pgto_moda", "ult_dia_pgto", "percentual_honra_pgto", "qtd_fones_cpc", "media_pontuacao_fones" }));
 
             // Set the training algorithm 
             var trainer = mlContext.BinaryClassification.Trainers.LightGbm(new LightGbmBinaryTrainer.Options() { NumberOfIterations = 200, LearningRate = 0.13136f, NumberOfLeaves = 100, MinimumExampleCountPerLeaf = 10, UseCategoricalSplit = false, HandleMissingValue = true, MinimumExampleCountPerGroup = 10, MaximumCategoricalSplitPointCount = 8, CategoricalSmoothing = 20, L2CategoricalRegularization = 0.5, Booster = new GradientBooster.Options() { L2Regularization = 0, L1Regularization = 0.5 }, LabelColumnName = "pagamento", FeatureColumnName = "Features" });
@@ -71,10 +71,10 @@ namespace CobrancaMLML.ConsoleApp
             var mlModel = trainingPipeline.Fit(trainingDataView);
 
             //get features' Weights
-            //var modelParameters = mlModel.LastTransformer.Model;
-            //VBuffer<float> weights = default;
+            var modelParameters = mlModel.LastTransformer.Model;
+            VBuffer<float> weights = default;
 
-            //modelParameters.SubModel.GetFeatureWeights(ref weights);
+            modelParameters.SubModel.GetFeatureWeights(ref weights);
 
 
             Console.WriteLine("=============== End of training process ===============");
