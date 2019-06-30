@@ -65,13 +65,23 @@ namespace CobrancaMLML.ConsoleApp
             var crossValidationResults = mlContext.BinaryClassification.CrossValidateNonCalibrated(trainingDataView, trainingPipeline, numberOfFolds: 5, labelColumnName: "pagamento");
             PrintBinaryClassificationFoldsAverageMetrics(crossValidationResults);
 
+            
 
 
 
             // Train Model
             Console.WriteLine("=============== Training  model ===============");
-
             var mlModel = trainingPipeline.Fit(trainingDataView);
+
+
+
+
+            //// Evaluate the overall metrics.
+            Console.WriteLine("=============== Overall Metrics ===============");
+            var metrics = mlContext.BinaryClassification.Evaluate(mlModel.Transform(trainingDataView), labelColumnName:"pagamento" );
+            PrintMetrics(metrics);
+            Console.WriteLine("=============== End Of Overall Metrics ===============");
+
 
             //get features' Weights
             var modelParameters = mlModel.LastTransformer.Model;
@@ -105,6 +115,18 @@ namespace CobrancaMLML.ConsoleApp
 
         }
 
+        // Pretty-print BinaryClassificationMetrics objects.
+        private static void PrintMetrics(BinaryClassificationMetrics metrics)
+        {
+            Console.WriteLine($"Accuracy: {metrics.Accuracy:F2}");
+            Console.WriteLine($"AUC: {metrics.AreaUnderRocCurve:F2}");
+            Console.WriteLine($"F1 Score: {metrics.F1Score:F2}");
+            Console.WriteLine($"Negative Precision: {metrics.NegativePrecision:F2}");
+            Console.WriteLine($"Negative Recall: {metrics.NegativeRecall:F2}");
+            Console.WriteLine($"Positive Precision: {metrics.PositivePrecision:F2}");
+            Console.WriteLine($"Positive Recall: {metrics.PositiveRecall:F2}\n");
+            Console.WriteLine(metrics.ConfusionMatrix.GetFormattedConfusionTable());
+        }
 
         public static string GetAbsolutePath(string relativePath)
         {
